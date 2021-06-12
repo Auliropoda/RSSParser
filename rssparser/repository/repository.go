@@ -2,28 +2,51 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"lab8/rssparser/models"
+	"os"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 )
 
-const userName string = "auli"
-const password string = "bq47w8mz"
-const dbName string = "test"
-const host string = "127.0.0.1"
-const port string = "5432"
-
 const pathToCreateTable string = "rssparser/repository/infoRSS.sql"
 const pathToDropTable string = "rssparser/repository/dropRSS.sql"
+const pathToConfig string = "userconfig.json"
 
+type User struct {
+	UserName string `json:"username"`
+	Password string `json:"password"`
+	DbName   string `json:"dbname"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+}
 type PostgreRSSRepository struct {
 	pool *pgxpool.Pool
 }
 
 func NewPostgreRSSRepository() (*PostgreRSSRepository, error) {
-	DBUri := "postgresql://" + userName + ":" + password + "@" + host + ":" + port + "/" + dbName
+	filename, err := os.Open(pathToConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to read JSON")
+	}
+	defer filename.Close()
+
+	data, err := ioutil.ReadAll(filename)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to read filename")
+	}
+
+	var user User
+
+	err = json.Unmarshal(data, &user)
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to Unmarshal data")
+	}
+
+	DBUri := "postgresql://" + user.UserName + ":" + user.Password + "@" + user.Host + ":" + user.Port + "/" + user.DbName
 	config, err := pgxpool.ParseConfig(DBUri)
 	if err != nil {
 		return nil, errors.Wrap(err, "Unable to create config")
