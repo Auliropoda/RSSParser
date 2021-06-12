@@ -1,18 +1,23 @@
 package main
 
 import (
-	"lab8/repository"
+	"lab8/rssparser"
 	"log"
 )
 
 func main() {
-	/*if err := parser.Parse(); err != nil {
-		log.Fatal(err.Error())
-	}*/
-
-	repo, err := repository.NewPostgreRSSRepository()
+	parser, err := rssparser.NewRSSParser()
 	if err != nil {
 		log.Fatal(err)
 	}
-	println(repo)
+	defer parser.CLoseConnection()
+	err = parser.SaveData()
+	if err != nil {
+		log.Fatal(err)
+	}
+	parser.ShowData()
+	//err = parser.DropTable()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 }

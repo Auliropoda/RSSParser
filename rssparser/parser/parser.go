@@ -2,7 +2,7 @@ package parser
 
 import (
 	"io/ioutil"
-	"lab8/models"
+	"lab8/rssparser/models"
 	"net/http"
 
 	"github.com/mmcdole/gofeed"
